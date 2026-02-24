@@ -178,49 +178,18 @@ namespace PatiSlotGenerator
             MessageBox.Show("Udon用テーブルクラスをコピーしました");
         }
 
-        private float ExtractPercentFromScript(string script, string enumName)
+        private List<float> ExtractWeights(string script)
         {
+            var result = new List<float>();
             var lines = script.Split('\n');
 
-            bool inResults = false;
-            int index = -1;
-            int currentIndex = 0;
-
-            foreach (var raw in lines)
-            {
-                var line = raw.Trim();
-
-                if (line.StartsWith("[SerializeField] private ResultType[]"))
-                {
-                    inResults = true;
-                    continue;
-                }
-
-                if (inResults && line.StartsWith("};"))
-                    inResults = false;
-
-                if (inResults && line.Contains("ResultType."))
-                {
-                    if (line.Contains(enumName))
-                    {
-                        index = currentIndex;
-                        break;
-                    }
-                    currentIndex++;
-                }
-            }
-
-            if (index == -1)
-                return 0f;
-
             bool inWeights = false;
-            int weightIndex = 0;
 
             foreach (var raw in lines)
             {
                 var line = raw.Trim();
 
-                if (line.StartsWith("[SerializeField] private float[] weights"))
+                if (line.StartsWith("private float[] weights"))
                 {
                     inWeights = true;
                     continue;
@@ -231,16 +200,13 @@ namespace PatiSlotGenerator
 
                 if (inWeights && line.EndsWith("f,"))
                 {
-                    if (weightIndex == index)
-                    {
-                        string val = line.Replace("f,", "");
-                        return float.Parse(val);
-                    }
-                    weightIndex++;
+                    string val = line.Replace("f,", "").Trim();
+                    if (float.TryParse(val, out float parsed))
+                        result.Add(parsed);
                 }
             }
 
-            return 0f;
+            return result;
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
@@ -254,8 +220,10 @@ namespace PatiSlotGenerator
 
             probabilityBar.Items.Clear();
 
-            var lines = code.Split('\n');
+            var weights = ExtractWeights(code);
+            int weightIndex = 0;
 
+            var lines = code.Split('\n');
             bool colorSection = false;
 
             foreach (var raw in lines)
@@ -291,8 +259,9 @@ namespace PatiSlotGenerator
                 int g = int.Parse(rgb[1]);
                 int b = int.Parse(rgb[2]);
 
-                // 確率はweights配列から取る
-                float percent = ExtractPercentFromScript(code, name);
+                float percent = 0f;
+                if (weightIndex < weights.Count)
+                    percent = weights[weightIndex];
 
                 probabilityBar.Items.Add(new ProbabilityItem
                 {
@@ -300,6 +269,8 @@ namespace PatiSlotGenerator
                     Percentage = percent,
                     Color = Color.FromArgb(r, g, b)
                 });
+
+                weightIndex++;
             }
 
             probabilityBar.Refresh();
