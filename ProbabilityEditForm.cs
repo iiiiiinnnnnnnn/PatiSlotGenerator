@@ -42,5 +42,10 @@ namespace PatiSlotGenerator
                 }
             }
         }
+
+        private void changed(object sender, EventArgs e)
+        {
+            textBox1.Text = textBox1.Text.Trim();
+        }
     }
 }

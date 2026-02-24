@@ -46,15 +46,16 @@
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(246, 23);
             textBox1.TabIndex = 0;
+            textBox1.TextChanged += changed;
             // 
             // label1
             // 
             label1.AutoSize = true;
             label1.Location = new Point(12, 18);
             label1.Name = "label1";
-            label1.Size = new Size(31, 15);
+            label1.Size = new Size(73, 15);
             label1.TabIndex = 1;
-            label1.Text = "名前";
+            label1.Text = "名前(英語で)";
             // 
             // label2
             // 
