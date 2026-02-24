@@ -109,11 +109,8 @@ namespace PatiSlotGenerator
             sb.AppendLine("using VRC.Udon;");
             sb.AppendLine();
 
-            sb.AppendLine($"public class {tableName} : UdonSharpBehaviour");
-            sb.AppendLine("{");
-
             // ===== ENUM =====
-            sb.AppendLine("    public enum ResultType");
+            sb.AppendLine($"    public enum {tableName}__ResultType");
             sb.AppendLine("    {");
 
             foreach (var item in probabilityBar.Items)
@@ -122,17 +119,20 @@ namespace PatiSlotGenerator
             sb.AppendLine("    }");
             sb.AppendLine();
 
+            sb.AppendLine($"public class {tableName} : UdonSharpBehaviour");
+            sb.AppendLine("{");
+
             // ===== 配列 =====
-            sb.AppendLine("    [SerializeField] private ResultType[] results = new ResultType[]");
+            sb.AppendLine($"    private {tableName}__ResultType[] results = new {tableName}__ResultType[]");
             sb.AppendLine("    {");
 
             foreach (var item in probabilityBar.Items)
-                sb.AppendLine($"        ResultType.{item.Name},");
+                sb.AppendLine($"        {tableName}__ResultType.{item.Name},");
 
             sb.AppendLine("    };");
             sb.AppendLine();
 
-            sb.AppendLine("    [SerializeField] private float[] weights = new float[]");
+            sb.AppendLine("    private float[] weights = new float[]");
             sb.AppendLine("    {");
 
             foreach (var item in probabilityBar.Items)
@@ -142,7 +142,7 @@ namespace PatiSlotGenerator
             sb.AppendLine();
 
             // ===== 抽選関数 =====
-            sb.AppendLine("    public ResultType GetRandom()");
+            sb.AppendLine($"    public {tableName}__ResultType GetRandom()");
             sb.AppendLine("    {");
             sb.AppendLine("        float total = 0f;");
             sb.AppendLine("        for (int i = 0; i < weights.Length; i++)");
