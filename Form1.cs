@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using static PatiSlotGenerator.ProbabilityBarControl;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace PatiSlotGenerator
 {
@@ -17,6 +18,202 @@ namespace PatiSlotGenerator
         private int gameCounter = 0;
         private Random random = new Random();
 
+        Dictionary<string, Image> map = new();
+
+        private void AddReelSlot()
+        {
+            map.Clear();
+            panel1.Controls.Clear();
+
+            for (int i = 0; i < 10; i++)
+            {
+                PictureBox btn1 = new PictureBox();
+                btn1.Text = "パレット" + (i + 1);
+                btn1.Width = 120;
+                btn1.Height = 120;
+                btn1.ForeColor = Color.Black;
+                btn1.BackColor = Color.White;
+                btn1.Margin = new Padding(5);
+                btn1.SizeMode = PictureBoxSizeMode.StretchImage;
+                btn1.BorderStyle = BorderStyle.FixedSingle;
+
+                btn1.Click += (s, e) =>
+                {
+                    OpenFileDialog ofd = new OpenFileDialog();
+                    ofd.Filter = "PNG files (*.png)|*.png";
+
+                    if (ofd.ShowDialog() == DialogResult.OK)
+                    {
+                        btn1.Image = Image.FromFile(ofd.FileName);
+                        map[btn1.Text] = btn1.Image;
+                    }
+                };
+
+                panel1.Controls.Add(btn1);
+            }
+
+            CreateReels();
+        }
+
+        List<PictureBox[]> reels = new();
+
+        private void CreateReels()
+        {
+            int reelCount = 3;
+            int rows = 21;
+            int size = 100;
+            int height = size - ((int)numericUpDown1.Value);
+
+            panelReels.Controls.Clear();
+            reels.Clear();
+
+            for (int r = 0; r < reelCount; r++)
+            {
+                PictureBox[] reel = new PictureBox[rows];
+
+                for (int i = 0; i < rows; i++)
+                {
+                    PictureBox pic = new PictureBox();
+                    pic.Width = size;
+                    pic.Height = height;
+
+                    pic.Location = new Point(r * (size + 10), i * (height + 5));
+                    pic.BorderStyle = BorderStyle.None;
+                    pic.BackColor = Color.LightGray;
+                    pic.Tag = ""; // 選ばれた役名を保持
+                    pic.SizeMode = PictureBoxSizeMode.StretchImage;
+                    pic.ContextMenuStrip = CreateReelMenu(pic);
+
+                    panelReels.Controls.Add(pic);
+                    reel[i] = pic;
+                }
+
+                reels.Add(reel);
+            }
+
+            panelReels.AutoScroll = true;
+        }
+
+        private void ExportReels(bool combine)
+        {
+            int reelCount = 3;
+            int rows = 21;
+            int width = 100;
+            int height = 100 - ((int)numericUpDown1.Value);
+
+            if (combine)
+            {
+                // 横に3リール連結
+                Bitmap bmp = new Bitmap(width * reelCount, rows * height);
+
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.Clear(Color.Transparent);
+
+                    for (int r = 0; r < reelCount; r++)
+                    {
+                        for (int i = 0; i < rows; i++)
+                        {
+                            var pic = reels[r][i];
+
+                            if (pic.Image != null)
+                            {
+                                g.DrawImage(
+                                    pic.Image,
+                                    r * width,          // 横位置
+                                    i * height,          // 縦位置
+                                    width,
+                                    height);
+                            }
+                        }
+                    }
+                }
+
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Filter = "PNG files (*.png)|*.png";
+
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    bmp.Save(sfd.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                }
+            }
+            else
+            {
+                FolderBrowserDialog fbd = new FolderBrowserDialog();
+
+                if (fbd.ShowDialog() != DialogResult.OK)
+                    return;
+
+                for (int r = 0; r < reelCount; r++)
+                {
+                    Bitmap bmp = new Bitmap(width, rows * height);
+
+                    using (Graphics g = Graphics.FromImage(bmp))
+                    {
+                        g.Clear(Color.Transparent);
+
+                        for (int i = 0; i < rows; i++)
+                        {
+                            var pic = reels[r][i];
+
+                            if (pic.Image != null)
+                            {
+                                g.DrawImage(pic.Image, 0, i * height, width, height);
+                            }
+                        }
+                    }
+
+                    string path = Path.Combine(fbd.SelectedPath, $"Reel_{r + 1}.png");
+                    bmp.Save(path, System.Drawing.Imaging.ImageFormat.Png);
+                }
+
+                MessageBox.Show("3リールを書き出しました");
+            }
+        }
+
+        private void exportOne_Click(object sender, EventArgs e)
+        {
+            ExportReels(true);  // 1枚にまとめる
+        }
+
+        private void exportThree_Click(object sender, EventArgs e)
+        {
+            ExportReels(false); // 3枚に分ける
+        }
+
+        private ContextMenuStrip CreateReelMenu(PictureBox target)
+        {
+            ContextMenuStrip menu = new ContextMenuStrip();
+
+            for (int i = 0; i < 10; i++)
+            {
+                var name = "パレット" + (i + 1);
+
+                ToolStripMenuItem mi = new ToolStripMenuItem(name);
+
+                mi.Click += (s, e) =>
+                {
+                    if (!map.ContainsKey(name))
+                    {
+                        MessageBox.Show("この役の画像が登録されていません");
+                        return;
+                    }
+
+                    target.Image = map[name];
+                    target.Tag = name;
+                };
+
+                menu.Items.Add(mi);
+            }
+
+            return menu;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            AddReelSlot();
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             btnReset_Click(null, null);
@@ -26,6 +223,8 @@ namespace PatiSlotGenerator
             simTimer.Tick += SimTimer_Tick;
 
             gamecount.Text = "ゲーム数: 0";
+
+            AddReelSlot();
         }
 
         private ProbabilityItem GetRandomResult()
@@ -278,6 +477,8 @@ namespace PatiSlotGenerator
 
         private void btnReset_Click(object sender, EventArgs e)
         {
+            probabilityBar.Items.Clear();
+
             probabilityBar.Items.Add(new ProbabilityItem
             {
                 Name = "Lose",
@@ -301,8 +502,15 @@ namespace PatiSlotGenerator
 
             probabilityBar.Items.Add(new ProbabilityItem
             {
+                Name = "Melon",
+                Percentage = 2.03f,
+                Color = Color.GreenYellow
+            });
+
+            probabilityBar.Items.Add(new ProbabilityItem
+            {
                 Name = "Cherry",
-                Percentage = 3.03f,
+                Percentage = 1.00f,
                 Color = Color.Red
             });
 
@@ -317,7 +525,7 @@ namespace PatiSlotGenerator
             {
                 Name = "REG",
                 Percentage = 0.228f,
-                Color = Color.Blue
+                Color = Color.AliceBlue
             });
 
             probabilityBar.Invalidate();
