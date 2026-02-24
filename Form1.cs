@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using static PatiSlotGenerator.ProbabilityBarControl;
 
 namespace PatiSlotGenerator
@@ -12,9 +13,68 @@ namespace PatiSlotGenerator
             InitializeComponent();
         }
 
+        private System.Windows.Forms.Timer simTimer;
+        private int gameCounter = 0;
+        private Random random = new Random();
+
         private void Form1_Load(object sender, EventArgs e)
         {
             btnReset_Click(null, null);
+
+            simTimer = new System.Windows.Forms.Timer();
+            simTimer.Interval = 50; // 好きな速度に
+            simTimer.Tick += SimTimer_Tick;
+
+            gamecount.Text = "ゲーム数: 0";
+        }
+
+        private ProbabilityItem GetRandomResult()
+        {
+            double total = probabilityBar.Items.Sum(x => x.Percentage);
+            double rand = random.NextDouble() * total;
+
+            double current = 0;
+
+            foreach (var item in probabilityBar.Items)
+            {
+                current += item.Percentage;
+                if (rand <= current)
+                    return item;
+            }
+
+            return probabilityBar.Items[0];
+        }
+
+        private void AppendLog(string text, Color backColor)
+        {
+            logtext.SelectionStart = logtext.TextLength;
+            logtext.SelectionLength = 0;
+
+            logtext.SelectionBackColor = backColor;
+            logtext.SelectionColor = Color.Black; // 文字は黒固定
+
+            logtext.AppendText(text + Environment.NewLine);
+
+            logtext.SelectionBackColor = logtext.BackColor;
+            logtext.ScrollToCaret();
+
+            if (logtext.TextLength >= logtext.MaxLength - 100)
+            {
+                logtext.Clear();
+            }
+        }
+
+        private void SimTimer_Tick(object sender, EventArgs e)
+        {
+            if (probabilityBar.Items.Count == 0)
+                return;
+
+            var result = GetRandomResult();
+
+            gameCounter++;
+            gamecount.Text = $"ゲーム数: {gameCounter}";
+
+            AppendLog($"{gameCounter}G : {result.Name}", result.Color);
         }
 
         private void tablenamechanged(object sender, EventArgs e)
@@ -247,51 +307,73 @@ namespace PatiSlotGenerator
 
         private void btnReset_Click(object sender, EventArgs e)
         {
-            probabilityBar.Items.Clear();
-
             probabilityBar.Items.Add(new ProbabilityItem
             {
                 Name = "Lose",
-                Percentage = 48,
+                Percentage = 68.976f,
                 Color = Color.Gray
             });
 
             probabilityBar.Items.Add(new ProbabilityItem
             {
                 Name = "Replay",
-                Percentage = 18,
+                Percentage = 13.7f,
                 Color = Color.LightBlue
             });
 
             probabilityBar.Items.Add(new ProbabilityItem
             {
                 Name = "Bell",
-                Percentage = 25,
+                Percentage = 13.7f,
                 Color = Color.Gold
             });
 
             probabilityBar.Items.Add(new ProbabilityItem
             {
                 Name = "Cherry",
-                Percentage = 5,
+                Percentage = 3.03f,
                 Color = Color.Red
             });
 
             probabilityBar.Items.Add(new ProbabilityItem
             {
-                Name = "Melon",
-                Percentage = 3.5f,
-                Color = Color.Green
+                Name = "BIG",
+                Percentage = 0.366f,
+                Color = Color.Magenta
             });
 
             probabilityBar.Items.Add(new ProbabilityItem
             {
-                Name = "Bonus",
-                Percentage = 0.5f,
-                Color = Color.Magenta
+                Name = "REG",
+                Percentage = 0.228f,
+                Color = Color.Blue
             });
 
             probabilityBar.Invalidate();
+        }
+
+        private void btnsimulate_Click(object sender, EventArgs e)
+        {
+            if (probabilityBar.Items.Count == 0)
+            {
+                MessageBox.Show("項目がありません");
+                return;
+            }
+
+            simTimer.Start();
+        }
+
+        private void btnstop_Click(object sender, EventArgs e)
+        {
+            simTimer.Stop();
+        }
+
+        private void btnend_Click(object sender, EventArgs e)
+        {
+            simTimer.Stop();
+            gameCounter = 0;
+            gamecount.Text = "ゲーム数: 0";
+            logtext.Clear();
         }
     }
 }

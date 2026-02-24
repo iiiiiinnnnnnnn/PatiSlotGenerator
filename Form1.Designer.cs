@@ -38,6 +38,11 @@
             textBox1 = new TextBox();
             label2 = new Label();
             btnReset = new Button();
+            btnsimulate = new Button();
+            btnstop = new Button();
+            gamecount = new Label();
+            btnend = new Button();
+            logtext = new RichTextBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -93,9 +98,9 @@
             // textBox1
             // 
             textBox1.Font = new Font("Yu Gothic UI", 18F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            textBox1.Location = new Point(395, 36);
+            textBox1.Location = new Point(404, 36);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(393, 39);
+            textBox1.Size = new Size(384, 39);
             textBox1.TabIndex = 8;
             textBox1.Text = "SlotTable_DefaultA";
             textBox1.TextChanged += tablenamechanged;
@@ -103,7 +108,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(395, 18);
+            label2.Location = new Point(404, 18);
             label2.Name = "label2";
             label2.Size = new Size(54, 15);
             label2.TabIndex = 9;
@@ -111,19 +116,73 @@
             // 
             // btnReset
             // 
-            btnReset.Location = new Point(400, 198);
+            btnReset.Location = new Point(389, 198);
             btnReset.Name = "btnReset";
-            btnReset.Size = new Size(49, 45);
+            btnReset.Size = new Size(60, 48);
             btnReset.TabIndex = 11;
-            btnReset.Text = "リセット";
+            btnReset.Text = "テーブル初期化";
             btnReset.UseVisualStyleBackColor = true;
             btnReset.Click += btnReset_Click;
+            // 
+            // btnsimulate
+            // 
+            btnsimulate.Location = new Point(794, 36);
+            btnsimulate.Name = "btnsimulate";
+            btnsimulate.Size = new Size(72, 29);
+            btnsimulate.TabIndex = 12;
+            btnsimulate.Text = "シミュレート";
+            btnsimulate.UseVisualStyleBackColor = true;
+            btnsimulate.Click += btnsimulate_Click;
+            // 
+            // btnstop
+            // 
+            btnstop.Location = new Point(872, 36);
+            btnstop.Name = "btnstop";
+            btnstop.Size = new Size(28, 29);
+            btnstop.TabIndex = 13;
+            btnstop.Text = "停";
+            btnstop.UseVisualStyleBackColor = true;
+            btnstop.Click += btnstop_Click;
+            // 
+            // gamecount
+            // 
+            gamecount.AutoSize = true;
+            gamecount.Location = new Point(794, 68);
+            gamecount.Name = "gamecount";
+            gamecount.Size = new Size(58, 15);
+            gamecount.TabIndex = 15;
+            gamecount.Text = "ゲーム数: 0";
+            // 
+            // btnend
+            // 
+            btnend.Location = new Point(898, 36);
+            btnend.Name = "btnend";
+            btnend.Size = new Size(28, 29);
+            btnend.TabIndex = 16;
+            btnend.Text = "終";
+            btnend.UseVisualStyleBackColor = true;
+            btnend.Click += btnend_Click;
+            // 
+            // logtext
+            // 
+            logtext.Location = new Point(794, 90);
+            logtext.Name = "logtext";
+            logtext.ReadOnly = true;
+            logtext.ScrollBars = RichTextBoxScrollBars.Vertical;
+            logtext.Size = new Size(132, 243);
+            logtext.TabIndex = 17;
+            logtext.Text = "";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 346);
+            ClientSize = new Size(938, 346);
+            Controls.Add(logtext);
+            Controls.Add(btnend);
+            Controls.Add(gamecount);
+            Controls.Add(btnstop);
+            Controls.Add(btnsimulate);
             Controls.Add(btnReset);
             Controls.Add(label2);
             Controls.Add(textBox1);
@@ -151,5 +210,10 @@
         private TextBox textBox1;
         private Label label2;
         private Button btnReset;
+        private Button btnsimulate;
+        private Button btnstop;
+        private Label gamecount;
+        private Button btnend;
+        private RichTextBox logtext;
     }
 }
